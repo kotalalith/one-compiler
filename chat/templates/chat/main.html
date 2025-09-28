@@ -1,0 +1,257 @@
+<!DOCTYPE html>
+<html lang="en" >
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Fixed Online Compiler Search & Tabs</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 0;
+      padding: 0;
+      text-align: center;
+      background-color: #fff;
+      color: #333;
+    }
+
+    header {
+      padding: 40px 20px 20px;
+    }
+
+    header h1 {
+      font-size: 2.2rem;
+      font-weight: bold;
+    }
+
+    header h1 span {
+      color: #4a6cf7;
+    }
+
+    header p {
+      font-size: 1rem;
+      color: #666;
+    }
+
+    .search-box {
+      margin: 20px auto;
+      max-width: 500px;
+    }
+
+    .search-box input {
+      width: 100%;
+      padding: 12px;
+      border-radius: 6px;
+      border: 1px solid #ccc;
+      font-size: 1rem;
+    }
+
+    .tabs {
+      margin: 20px auto 20px;
+      display: flex;
+      justify-content: center;
+      gap: 30px;
+      font-size: 1rem;
+      font-weight: bold;
+      cursor: pointer;
+    }
+
+    .tabs div.active {
+      border-bottom: 2px solid #4a6cf7;
+      color: #4a6cf7;
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+      gap: 20px;
+      max-width: 800px;
+      margin: 30px auto;
+      padding: 0 20px;
+    }
+
+    .card {
+      border: 1px solid #eee;
+      border-radius: 10px;
+      padding: 20px;
+      background: #fafafa;
+      cursor: pointer;
+      transition: box-shadow 0.3s, transform 0.3s;
+    }
+
+    .card:hover {
+      box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+      transform: translateY(-5px);
+    }
+
+    .card button {
+      background: none;
+      border: none;
+      width: 100%;
+      cursor: pointer;
+      font-family: inherit;
+      font-size: inherit;
+      color: inherit;
+    }
+
+    .card img {
+      width: 40px;
+      height: 40px;
+      margin-bottom: 10px;
+    }
+
+    .card p {
+      margin: 0;
+      font-size: 1rem;
+      font-weight: 600;
+    }
+
+    /* Search Results container */
+    #searchResults {
+      display: none;
+      max-width: 800px;
+      margin: 30px auto;
+      padding: 0 20px;
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>Code online with <span>One Compiler</span>.</h1>
+    <p>Write and run your favorite languages online.</p>
+
+    <div class="search-box">
+      <input type="text" id="searchInput" placeholder="Search Languages..." />
+    </div>
+  </header>
+
+  <div class="tabs" id="tabs">
+    <div id="popularTab" class="active" data-target="popular">POPULAR</div>
+    <div id="programmingTab" data-target="programming">PROGRAMMING</div>
+    <div id="webTab" data-target="web">WEB</div>
+  </div>
+
+  <!-- Sections -->
+  <div id="popular" class="grid">
+    <div class="card"><button data-lang="html"><img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/html5/html5-original.svg" alt="HTML" /><p>HTML</p></button></div>
+    <div class="card"><button data-lang="python"><img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/python/python-original.svg" alt="Python" /><p>Python</p></button></div>
+    <div class="card"><button data-lang="javascript"><img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/javascript/javascript-original.svg" alt="JavaScript" /><p>JavaScript</p></button></div>
+    <div class="card"><button data-lang="java"><img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/java/java-original.svg" alt="Java" /><p>Java</p></button></div>
+    <div class="card"><button data-lang="c++"><img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/cplusplus/cplusplus-original.svg" alt="C++" /><p>C++</p></button></div>
+    <div class="card"><button data-lang="c"><img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/c/c-original.svg" alt="C" /><p>C</p></button></div>
+  </div>
+
+  <div id="programming" class="grid" style="display:none">
+    <div class="card"><button data-lang="c"><img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/c/c-original.svg" alt="C" /><p>C</p></button></div>
+    <div class="card"><button data-lang="c++"><img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/cplusplus/cplusplus-original.svg" alt="C++" /><p>C++</p></button></div>
+    <div class="card"><button data-lang="java"><img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/java/java-original.svg" alt="Java" /><p>Java</p></button></div>
+    <div class="card"><button data-lang="python"><img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/python/python-original.svg" alt="Python" /><p>Python</p></button></div>
+    <div class="card"><button data-lang="javascript"><img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/javascript/javascript-original.svg" alt="JavaScript" /><p>JavaScript</p></button></div>
+    <div class="card"><button data-lang="c#"><img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/csharp/csharp-original.svg" alt="C#" /><p>C#</p></button></div>
+    <div class="card"><button data-lang="php"><img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/php/php-original.svg" alt="PHP" /><p>PHP</p></button></div>
+    <div class="card"><button data-lang="ruby"><img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/ruby/ruby-original.svg" alt="Ruby" /><p>Ruby</p></button></div>
+    <div class="card"><button data-lang="go"><img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/go/go-original.svg" alt="Go" /><p>Go</p></button></div>
+    <div class="card"><button data-lang="swift"><img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/swift/swift-original.svg" alt="Swift" /><p>Swift</p></button></div>
+  </div>
+
+  <div id="web" class="grid" style="display:none">
+    <div class="card"><button data-lang="html"><img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/html5/html5-original.svg" alt="HTML" /><p>HTML</p></button></div>
+    <div class="card"><button data-lang="css"><img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/css3/css3-original.svg" alt="CSS" /><p>CSS</p></button></div>
+    <div class="card"><button data-lang="javascript"><img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/javascript/javascript-original.svg" alt="JavaScript" /><p>JavaScript</p></button></div>
+    <div class="card"><button data-lang="react"><img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/react/react-original.svg" alt="React" /><p>React</p></button></div>
+    <div class="card"><button data-lang="angular"><img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/angularjs/angularjs-original.svg" alt="Angular" /><p>Angular</p></button></div>
+    <div class="card"><button data-lang="vue"><img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/vuejs/vuejs-original.svg" alt="Vue.js" /><p>Vue.js</p></button></div>
+    <div class="card"><button data-lang="node.js"><img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/nodejs/nodejs-original.svg" alt="Node.js" /><p>Node.js</p></button></div>
+  </div>
+
+  <!-- Container for search results -->
+  <div id="searchResults" class="grid"></div>
+
+  <script>
+    const tabs = document.querySelectorAll(".tabs div");
+    const sections = {
+      popular: document.getElementById("popular"),
+      programming: document.getElementById("programming"),
+      web: document.getElementById("web"),
+    };
+    const searchResults = document.getElementById("searchResults");
+    const searchInput = document.getElementById("searchInput");
+
+    // Show a given section and hide others
+    function showSection(sectionId) {
+      // Hide search results container always on tab switch
+      searchResults.style.display = "none";
+      searchResults.innerHTML = "";
+
+      Object.keys(sections).forEach((key) => {
+        sections[key].style.display = key === sectionId ? "grid" : "none";
+      });
+      tabs.forEach(tab => {
+        tab.classList.toggle("active", tab.dataset.target === sectionId);
+      });
+      searchInput.value = ""; // clear search on tab change
+    }
+
+    // Initial load: show popular
+    showSection("popular");
+
+    // Tab click handlers
+    tabs.forEach(tab => {
+      tab.addEventListener("click", () => {
+        showSection(tab.dataset.target);
+      });
+    });
+
+    // Search function
+    searchInput.addEventListener("keypress", function(e) {
+      if (e.key === "Enter") {
+        const query = searchInput.value.trim().toLowerCase();
+        if (!query) {
+          // Empty search: reset to active tab
+          const activeTab = document.querySelector(".tabs div.active");
+          showSection(activeTab ? activeTab.dataset.target : "popular");
+          return;
+        }
+
+        // Collect all cards from all sections (avoid duplicates by storing by data-lang)
+        const allCards = {};
+        Object.values(sections).forEach(section => {
+          const cards = section.querySelectorAll(".card");
+          cards.forEach(card => {
+            const lang = card.querySelector("button").dataset.lang.toLowerCase();
+            if (!allCards[lang]) {
+              allCards[lang] = card.cloneNode(true);
+            }
+          });
+        });
+
+        // Filter cards by query
+        const matchedCards = Object.values(allCards).filter(card => {
+          const lang = card.querySelector("button").dataset.lang.toLowerCase();
+          return lang.includes(query);
+        });
+
+        if (matchedCards.length === 0) {
+          alert("Language not available!");
+          // Reset to active tab on no results
+          const activeTab = document.querySelector(".tabs div.active");
+          showSection(activeTab ? activeTab.dataset.target : "popular");
+          return;
+        }
+
+        // Show search results container and add matched cards
+        searchResults.innerHTML = "";
+        matchedCards.forEach(card => searchResults.appendChild(card));
+        searchResults.style.display = "grid";
+
+        // Hide all normal sections
+        Object.values(sections).forEach(section => {
+          section.style.display = "none";
+        });
+
+        // Remove active tab highlight since search results shown
+        tabs.forEach(tab => tab.classList.remove("active"));
+      }
+    });
+  </script>
+</body>
+</html>

@@ -1,0 +1,339 @@
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Online C Compiler — Simple UI with PDF Chatbot</title>
+  <style>
+    :root{
+      --bg:#0f1724; --panel:#0b1220; --muted:#9aa7bf; --accent:#60a5fa;
+      --success:#10b981; --danger:#f43f5e; --glass: rgba(255,255,255,0.03);
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial;
+    }
+    html,body{height:100%; margin:0; background:linear-gradient(180deg,#071022 0%, #071229 100%); color:#e6eef8}
+    .app{max-width:1100px;margin:28px auto;padding:18px; background:linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01)); border-radius:12px; box-shadow:0 6px 30px rgba(2,6,23,0.6)}
+    header{display:flex; gap:12px; align-items:center; margin-bottom:12px}
+    header h1{font-size:18px;margin:0}
+    .controls{display:flex; gap:10px; margin-left:auto; align-items:center}
+    select,input[type="text"]{background:var(--glass); border:1px solid rgba(255,255,255,0.04); color:var(--muted); padding:8px 10px; border-radius:8px}
+    button{
+      background:linear-gradient(180deg,var(--accent), #3b82f6);
+      color:white;padding:8px 12px;border:none;border-radius:10px;font-weight:600; cursor:pointer;
+      box-shadow:0 6px 16px rgba(59,130,246,0.18);
+    }
+    button.ghost{background:transparent;border:1px solid rgba(255,255,255,0.04); box-shadow:none;color:var(--muted)}
+    .layout{display:grid; grid-template-columns: 1fr 420px; gap:12px}
+    .card{background:rgba(255,255,255,0.02); border-radius:10px; padding:12px; min-height:240px; border:1px solid rgba(255,255,255,0.02)}
+    textarea{width:100%; height:420px; resize:vertical; background:linear-gradient(180deg, rgba(3,7,18,0.6), rgba(2,6,18,0.55)); color:#dff0ff; border:none; padding:12px; font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, "Roboto Mono", monospace; font-size:13px; border-radius:8px}
+    .small{font-size:12px;color:var(--muted)}
+    .io{display:flex; gap:8px; margin-bottom:8px; align-items:center}
+    pre{white-space:pre-wrap; font-family: ui-monospace, monospace; font-size:13px; margin:0; padding:10px; background:rgba(0,0,0,0.35); border-radius:8px; color:#dff0ff; max-height:300px; overflow:auto}
+    footer{margin-top:10px; color:var(--muted); font-size:12px}
+    .status{display:inline-block; padding:6px 8px; border-radius:8px; font-weight:600}
+    .ok{background:linear-gradient(180deg,var(--success), #059669); color:white}
+    .err{background:linear-gradient(180deg,var(--danger), #ef4444); color:white}
+    .meta{margin-top:8px; color:var(--muted); font-size:12px}
+    .row{display:flex; gap:8px; align-items:center}
+    .inline-input{flex:1}
+
+    /* --- Chatbot Sidebar --- */
+    #chatbotBtn {
+      position: fixed;
+      bottom: 20px;
+      right: 20px;
+      background: #60a5fa;
+      color: white;
+      border-radius: 50%;
+      width: 60px;
+      height: 60px;
+      font-size: 30px;
+      display:flex;
+      justify-content:center;
+      align-items:center;
+      cursor:pointer;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+      z-index:1000;
+    }
+    #chatbotSidebar {
+      position: fixed;
+      right: 0;
+      top:0;
+      width: 400px;
+      height: 100%;
+      background:#0f1724;
+      color:white;
+      box-shadow: -4px 0 12px rgba(0,0,0,0.3);
+      transform: translateX(100%);
+      transition: transform 0.3s;
+      z-index:999;
+      display:flex;
+      flex-direction:column;
+      padding:10px;
+      pointer-events: none;
+    }
+    #chatbotSidebar.open {
+      transform: translateX(0);
+      pointer-events: all;
+    }
+    #chatbotHeader {
+      display:flex;
+      justify-content: space-between;
+      align-items:center;
+      padding-bottom:5px;
+      border-bottom:1px solid #333;
+    }
+    #chatbotBody { flex:1; overflow-y:auto; padding-top:10px; }
+    #chatbotBody input, #chatbotBody textarea, #chatbotBody button { margin-top:5px; width: 100%; }
+
+  </style>
+</head>
+<body>
+  <div class="app" role="main">
+    <!-- Compiler UI -->
+    <header>
+      <h1>Online C Compiler — Simple UI</h1>
+      <div class="controls">
+        <label class="small">Language:</label>
+        <select id="language">
+          <option value="50" selected>C (GCC)</option>
+          <option value="54">C++ (GCC)</option>
+          <option value="62">Python (3.x)</option>
+        </select>
+        <button id="runBtn">Compile & Run</button>
+        <button id="submitBtn" class="ghost">Compile only</button>
+      </div>
+    </header>
+
+    <div class="layout">
+      <div>
+        <div class="card">
+          <div style="display:flex; gap:10px; align-items:center; margin-bottom:8px">
+            <div class="small">Source code</div>
+            <div style="margin-left:auto" class="small">Example: prints "Hello, world!"</div>
+          </div>
+          <textarea id="source" spellcheck="false">
+#include <stdio.h>
+
+int main(void) {
+    printf("Hello, world!\n");
+    return 0;
+}
+          </textarea>
+          <div style="display:flex; gap:8px; margin-top:10px">
+            <div style="flex:1">
+              <div class="small">Stdin (input for program)</div>
+              <input id="stdin" class="inline-input" type="text" placeholder="Type input here (optional)" />
+            </div>
+            <div style="width:170px">
+              <div class="small">Timeout (s)</div>
+              <input id="timeout" type="text" value="5" />
+            </div>
+          </div>
+          <div style="display:flex; gap:8px; margin-top:10px">
+            <button id="downloadBtn" class="ghost">Download source</button>
+            <button id="examplesBtn" class="ghost">Load examples</button>
+            <div style="flex:1"></div>
+            <div class="small">Status: <span id="statusText" class="small">idle</span></div>
+          </div>
+        </div>
+        <div style="margin-top:12px" class="card">
+          <div class="small">Notes & Settings</div>
+          <div class="meta">
+            This frontend sends source to a Judge0 API to compile/run safely in their environment.<br/>
+            Make sure you have a valid RapidAPI key or your own Judge0 instance.
+          </div>
+        </div>
+      </div>
+
+      <aside>
+        <div class="card">
+          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px">
+            <div class="small">Output</div>
+            <div id="runMeta" class="small"></div>
+          </div>
+          <pre id="output">No output yet — click "Compile & Run".</pre>
+          <div style="margin-top:8px; display:flex; gap:8px; align-items:center">
+            <div id="verdict" class="status">IDLE</div>
+            <div style="flex:1"></div>
+            <button id="clearOutput" class="ghost">Clear</button>
+          </div>
+          <div id="extraInfo" class="meta"></div>
+        </div>
+      </aside>
+    </div>
+
+    <footer>
+      Tip: Judge0 returns structured results (stdout, stderr, compile_output).
+    </footer>
+  </div>
+
+  <!-- Chatbot Floating Button -->
+  <div id="chatbotBtn">💬</div>
+
+  <!-- Chatbot Sidebar -->
+  <div id="chatbotSidebar">
+    <div id="chatbotHeader">
+      <span>PDF Chatbot</span>
+      <button id="closeChatbot">✖</button>
+    </div>
+    <div id="chatbotBody">
+      <form id="uploadFormSidebar">
+        <label>Upload PDF:</label><br/>
+        <input type="file" name="file" accept="application/pdf" />
+        <button type="submit">Upload</button>
+      </form>
+      <div id="uploadResultSidebar"></div>
+      <div id="messagesSidebar" style="border:1px solid #ddd; padding:10px; min-height:150px; margin:10px 0;"></div>
+      <textarea id="messageInputSidebar" placeholder="Type your question..." style="width:100%; height:80px;"></textarea><br/>
+      <button id="sendBtnSidebar">Send</button>
+      <button id="clearBtnSidebar">Clear Chat</button>
+      <button id="detachBtnSidebar">Detach PDF</button>
+    </div>
+  </div>
+
+  <script>
+    /* -------------------- Compiler JS -------------------- */
+    const API_BASE = 'https://judge0.p.rapidapi.com';
+    const USE_RAPIDAPI = true;
+    const API_HEADERS = {
+      'Content-Type': 'application/json',
+      'X-RapidAPI-Host': 'online-java-compiler.p.rapidapi.com',
+      'X-RapidAPI-Key': 'YOUR_RAPIDAPI_KEY_HERE'
+    };
+
+    const sourceEl = document.getElementById('source');
+    const stdinEl = document.getElementById('stdin');
+    const runBtn = document.getElementById('runBtn');
+    const submitBtn = document.getElementById('submitBtn');
+    const outputEl = document.getElementById('output');
+    const verdictEl = document.getElementById('verdict');
+    const statusText = document.getElementById('statusText');
+    const languageEl = document.getElementById('language');
+    const timeoutEl = document.getElementById('timeout');
+    const downloadBtn = document.getElementById('downloadBtn');
+    const examplesBtn = document.getElementById('examplesBtn');
+    const clearOutputBtn = document.getElementById('clearOutput');
+    const runMeta = document.getElementById('runMeta');
+    const extraInfo = document.getElementById('extraInfo');
+
+    function b64Encode(str) { return btoa(unescape(encodeURIComponent(str))); }
+    function b64Decode(str) { try { return decodeURIComponent(escape(atob(str))); } catch(e){ return atob(str);} }
+    function setStatus(text, cls) {
+      statusText.textContent = text;
+      verdictEl.textContent = text.toUpperCase();
+      verdictEl.className = 'status ' + (cls || '');
+    }
+
+    async function submitToJudge0({sourceCode, stdin, language_id, wait=true, cpuTimeLimit=5}) {
+      const payload = {source_code:b64Encode(sourceCode), stdin:b64Encode(stdin||""), cpu_time_limit:String(cpuTimeLimit), language_id:Number(language_id)};
+      const params = new URLSearchParams({base64_encoded:'true'});
+      if(wait) params.set('wait','true');
+      const url = `${API_BASE}/submissions?${params.toString()}`;
+      setStatus('sending...','');
+      const res = await fetch(url,{method:'POST', headers:API_HEADERS, body:JSON.stringify(payload)});
+      if(!res.ok) throw new Error(`HTTP ${res.status}: ${await res.text()}`);
+      return res.json();
+    }
+
+    function showResult(json){
+      const status=json.status||{};
+      const desc=status.description||'Unknown';
+      const statusId=status.id||-1;
+      setStatus(desc,json.compile_output||json.stderr||(statusId===3?'ok':''),'');
+      const parts=[];
+      if(json.compile_output) parts.push('--- Compilation errors ---\n'+b64Decode(json.compile_output));
+      if(json.stdout) parts.push('--- Program output ---\n'+b64Decode(json.stdout));
+      if(json.stderr) parts.push('--- Runtime stderr ---\n'+b64Decode(json.stderr));
+      if(parts.length===0) parts.push('(no output)');
+      outputEl.textContent=parts.join('\n\n');
+      runMeta.textContent=`time: ${json.time ?? 'n/a'}s • memory: ${json.memory ?? 'n/a'}KB • status_id: ${statusId}`;
+      extraInfo.innerHTML=`<div class="small">Status: ${desc} (id ${statusId})</div>`;
+    }
+
+    runBtn.addEventListener('click', async () => {
+      try{
+        setStatus('running...','');
+        const result = await submitToJudge0({
+          sourceCode: sourceEl.value,
+          stdin: stdinEl.value,
+          language_id: languageEl.value,
+          wait:true,
+          cpuTimeLimit:Number(timeoutEl.value)||5
+        });
+        showResult(result);
+      }catch(err){
+        setStatus('error','err');
+        outputEl.textContent='Error: '+err.message;
+      }
+    });
+
+    submitBtn.addEventListener('click', async ()=>{ /* submit only */ });
+    downloadBtn.addEventListener('click', ()=>{ /* download logic */ });
+    examplesBtn.addEventListener('click', ()=>{ /* example code logic */ });
+    clearOutputBtn.addEventListener('click', ()=>{ outputEl.textContent=''; verdictEl.textContent='IDLE'; });
+
+    /* -------------------- Chatbot Sidebar JS -------------------- */
+    const chatbotBtn = document.getElementById('chatbotBtn');
+    const chatbotSidebar = document.getElementById('chatbotSidebar');
+    const closeChatbot = document.getElementById('closeChatbot');
+
+    chatbotBtn.addEventListener('click', () => { chatbotSidebar.classList.add('open'); });
+    closeChatbot.addEventListener('click', () => { chatbotSidebar.classList.remove('open'); });
+
+    async function postJSONSidebar(url, data) {
+      const res = await fetch(url, {
+        method:'POST',
+        headers:{'Content-Type':'application/json'},
+        body: JSON.stringify(data)
+      });
+      return res.json();
+    }
+
+    function appendMessageSidebar(who, txt){
+      const el = document.getElementById('messagesSidebar');
+      const div = document.createElement('div');
+      div.innerHTML = `<strong class="${who}">${who}:</strong> ${txt}`;
+      el.appendChild(div);
+      el.scrollTop = el.scrollHeight;
+    }
+
+    document.getElementById('sendBtnSidebar').addEventListener('click', async ()=>{
+      const message = document.getElementById('messageInputSidebar').value.trim();
+      if(!message) return;
+      appendMessageSidebar('user', message);
+      document.getElementById('messageInputSidebar').value = '';
+      appendMessageSidebar('bot', 'Typing...');
+      try {
+        const res = await postJSONSidebar('/chat/', {message});
+        const msgs = document.getElementById('messagesSidebar');
+        msgs.removeChild(msgs.lastChild);
+        if(res.status==='success') appendMessageSidebar('bot', res.response);
+        else appendMessageSidebar('bot', 'Error: ' + (res.message || JSON.stringify(res)));
+      } catch(e){
+        appendMessageSidebar('bot', 'Error: ' + e.message);
+      }
+    });
+
+    document.getElementById('clearBtnSidebar').addEventListener('click', async ()=>{
+      await fetch('/clear/', {method:'POST'});
+      document.getElementById('messagesSidebar').innerHTML = '';
+    });
+
+    document.getElementById('detachBtnSidebar').addEventListener('click', async ()=>{
+      const res = await fetch('/detach-pdf/', {method:'POST'}).then(r=>r.json());
+      document.getElementById('uploadResultSidebar').innerText = JSON.stringify(res);
+    });
+
+    document.getElementById('uploadFormSidebar').addEventListener('submit', async (e)=>{
+      e.preventDefault();
+      const input = document.querySelector('#uploadFormSidebar input[type="file"]');
+      if(!input.files.length) return alert("Choose a PDF");
+      const form = new FormData();
+      form.append('file', input.files[0]);
+      const res = await fetch('/upload-pdf/', {method:'POST', body:form});
+      const data = await res.json();
+      document.getElementById('uploadResultSidebar').innerText = JSON.stringify(data);
+    });
+
+  </script>
+</body>
+</html> when i click button in that automatically show the second page  dont need cahnges justchange i telled that only

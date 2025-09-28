@@ -1,0 +1,5 @@
+Django>=4.2
+uvicorn>=0.22.0            # optional if you want ASGI
+google-generativeai>=0.0.1 # use the right package name / version you used previously
+pdfminer.six>=20221105
+python-dotenv>=1.0.0
